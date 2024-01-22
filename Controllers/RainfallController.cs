@@ -72,23 +72,65 @@ namespace NetCoreAPIRainfall.Controllers
             var jsonObject_response = JsonConvert.DeserializeObject<JObject>(response);
             var items = jsonObject_response["items"];
 
+            var _custom_error = new List<error>();
+            var _readings_res = new List<Models.rainfallReadingResponse>();
+
             using (HttpClient client = new HttpClient())
             {
                 try
                 {
                     HttpResponseMessage message = await client.GetAsync(externalUrl);
 
-                    if (message.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    if (message.StatusCode == System.Net.HttpStatusCode.NotFound || items.Count() == 0)
                     {
-                        return NotFound("No readings found for the specified stationId");
+                        _custom_error.Add(new error()
+                        {
+                            message = "Error response",
+                            detail = new List<errorDetail>()
+                            {
+                                new errorDetail
+                                {
+                                    propertyName = System.Net.HttpStatusCode.NotFound.ToString(),
+                                    message = "No readings found for the specified stationId"
+                                }
+                            }
+                        });
+
+                        return new JsonResult(_custom_error);
                     }
                     else if (message.StatusCode == System.Net.HttpStatusCode.InternalServerError)
                     {
-                        Console.WriteLine("Internal server error");
+                        _custom_error.Add(new error()
+                        {
+                            message = "Internal server error",
+                            detail = new List<errorDetail>()
+                            {
+                                new errorDetail
+                                {
+                                    propertyName = System.Net.HttpStatusCode.InternalServerError.ToString(),
+                                    message = ""
+                                }
+                            }
+                        });
+
+                        return new JsonResult(_custom_error);
                     }
                     else if (message.StatusCode == System.Net.HttpStatusCode.BadRequest)
                     {
-                        Console.WriteLine("Invalid request.");
+                        _custom_error.Add(new error()
+                        {
+                            message = "Error response",
+                            detail = new List<errorDetail>()
+                            {
+                                new errorDetail
+                                {
+                                    propertyName = System.Net.HttpStatusCode.BadRequest.ToString(),
+                                    message = "Details of invalid request property"
+                                }
+                            }
+                        });
+
+                        return new JsonResult(_custom_error);
                     }
                     else
                     {
@@ -101,7 +143,6 @@ namespace NetCoreAPIRainfall.Controllers
                 }
             }
 
-            var _readings_res =new List<Models.rainfallReadingResponse>();
             
             foreach (var item in items)
             {
