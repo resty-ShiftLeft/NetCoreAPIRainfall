@@ -24,7 +24,29 @@ namespace NetCoreAPIRainfall.Controllers
             var externalUrl = "https://environment.data.gov.uk/flood-monitoring/id/stations/" + stationId + "/readings?_sorted&_limit=" + count;
             var response = await _httpClient.GetStringAsync(externalUrl);
 
-            return Ok(response);
+            var jsonObject_response = JsonConvert.DeserializeObject<JObject>(response);
+            var items = jsonObject_response["items"];
+
+
+            var _readings_res = new List<Models.rainfallReadingResponse>();
+
+            foreach (var item in items)
+            {
+                _readings_res.Add(new Models.rainfallReadingResponse
+                {
+                    Readings = new List<Models.rainfallReading>()
+                    {
+                        new Models.rainfallReading
+                        {
+                            dateMeasured = DateTime.Parse(item["dateTime"].ToString()),
+                            amountMeasured = decimal.Parse(item["value"].ToString()),
+                        }
+                    }
+                });
+            }
+
+
+            return new JsonResult(_readings_res);
         }
 
 
