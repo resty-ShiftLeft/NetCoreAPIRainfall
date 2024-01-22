@@ -21,5 +21,17 @@ namespace NetCoreAPIRainfall.Controllers
 
             return Ok(response);
         }
+
+
+        [HttpGet("/get-rainfall")]
+        [ProducesResponseType(typeof(List<rainfallReadingResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> get_rainfall_by_stationId([Required] string stationId)
+        {
+            // Your implementation to retrieve rainfall readings
+            var externalUrl = "https://environment.data.gov.uk/flood-monitoring/id/stations/" + stationId + "/readings?_sorted";
+            var response = await _httpClient.GetStringAsync(externalUrl);
+
+            return Ok(response);
+        }
     }
 }
