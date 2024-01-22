@@ -4,6 +4,7 @@ using NetCoreAPIRainfall.Models.Responses;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Swashbuckle.AspNetCore.Annotations;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 
@@ -72,9 +73,9 @@ namespace NetCoreAPIRainfall.Controllers
             var jsonObject_response = JsonConvert.DeserializeObject<JObject>(response);
             var items = jsonObject_response["items"];
 
-            var _custom_error = new List<error>();
-            var _readings_res = new List<Models.rainfallReadingResponse>();
 
+            var _readings_res = new List<Models.rainfallReadingResponse>();
+            var _custom_error = new List<errorResponse>();
             using (HttpClient client = new HttpClient())
             {
                 try
@@ -83,54 +84,36 @@ namespace NetCoreAPIRainfall.Controllers
 
                     if (message.StatusCode == System.Net.HttpStatusCode.NotFound || items.Count() == 0)
                     {
-                        _custom_error.Add(new error()
+                        _custom_error.Add(new errorResponse
                         {
-                            message = "Error response",
-                            detail = new List<errorDetail>()
-                            {
-                                new errorDetail
-                                {
-                                    propertyName = System.Net.HttpStatusCode.NotFound.ToString(),
-                                    message = "No readings found for the specified stationId"
-                                }
-                            }
+                            StatusCode = 404,
+                            Message = "No readings found for the specified stationId",
+                            ExceptionMessage = ""
                         });
 
-                        return new JsonResult(_custom_error);
+                        return NotFound(_custom_error);
                     }
                     else if (message.StatusCode == System.Net.HttpStatusCode.InternalServerError)
                     {
-                        _custom_error.Add(new error()
+                        _custom_error.Add(new errorResponse
                         {
-                            message = "Internal server error",
-                            detail = new List<errorDetail>()
-                            {
-                                new errorDetail
-                                {
-                                    propertyName = System.Net.HttpStatusCode.InternalServerError.ToString(),
-                                    message = ""
-                                }
-                            }
+                            StatusCode = 500,
+                            Message = "Internal server error",
+                            ExceptionMessage = ""
                         });
 
                         return new JsonResult(_custom_error);
                     }
                     else if (message.StatusCode == System.Net.HttpStatusCode.BadRequest)
                     {
-                        _custom_error.Add(new error()
+                        _custom_error.Add(new errorResponse
                         {
-                            message = "Error response",
-                            detail = new List<errorDetail>()
-                            {
-                                new errorDetail
-                                {
-                                    propertyName = System.Net.HttpStatusCode.BadRequest.ToString(),
-                                    message = "Details of invalid request property"
-                                }
-                            }
+                            StatusCode = 400,
+                            Message = "Details of invalid request property",
+                            ExceptionMessage = ""
                         });
 
-                        return new JsonResult(_custom_error);
+                        return BadRequest(_custom_error);
                     }
                     else
                     {
@@ -139,6 +122,12 @@ namespace NetCoreAPIRainfall.Controllers
                 }
                 catch (HttpRequestException ex)
                 {
+                    _custom_error.Add(new errorResponse
+                    {
+                        StatusCode = 0,
+                        Message = $"HTTP request error: {ex.Message}",
+                        ExceptionMessage = ex.Message
+                    });
                     Console.WriteLine($"HTTP request error: {ex.Message}");
                 }
             }
