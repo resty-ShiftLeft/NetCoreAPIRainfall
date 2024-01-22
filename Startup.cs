@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using NetCoreAPIRainfall.Models;
 
 namespace NetCoreAPIRainfall
 {
@@ -52,6 +53,8 @@ namespace NetCoreAPIRainfall
                     },
                     Description = "An API which provides rainfall reading data",
                 });
+
+                c.EnableAnnotations();
 
                 // Define servers
                 c.AddServer(new OpenApiServer
