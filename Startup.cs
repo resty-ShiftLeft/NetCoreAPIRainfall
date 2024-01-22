@@ -40,7 +40,17 @@ namespace NetCoreAPIRainfall
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Rainfall Api", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "Rainfall Api",
+                    Version = "1.0",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Sorted",
+                        Url = new Uri("https://www.sorted.com")
+                    },
+                    Description = "An API which provides rainfall reading data",
+                });
             });
 
 
